@@ -1,11 +1,8 @@
 package com.gabriel.redis4bukkit;
 
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.Protocol;
+import redis.clients.jedis.*;
+import java.util.function.BiConsumer;
 
 public class RedisServer {
 
@@ -43,6 +40,23 @@ public class RedisServer {
 
     public void connect() {
         jedisPool = new JedisPool(config, host, port);
+    }
+
+    public void publish(String message, String channel) {
+        getResource().publish(message, channel);
+    }
+
+    public void subscribe(BiConsumer<String, String> callback, String... channels) {
+        subscribe(new JedisPubSub() {
+            @Override
+            public void onMessage(String channel, String message) {
+                callback.accept(channel, message);
+            }
+        }, channels);
+    }
+
+    public void subscribe(JedisPubSub jedisPubSub, String... channels) {
+        getResource().subscribe(jedisPubSub, channels);
     }
 
     public Jedis getResource() {
